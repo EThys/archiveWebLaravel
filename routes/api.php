@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\PasswordChangeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +23,7 @@ Route::post('/login',[AuthController::class, 'login']);
 Route::group(['middleware'=>["auth:sanctum"]],function(){
     Route::get('/logout',[AuthController::class, 'logout']);
     Route::post('/create/branch',[BranchController::class, 'store']);
+    Route::post('/changePassword',[PasswordChangeController::class, 'changePassword']);
 });
 
 
