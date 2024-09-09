@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\InvoiceKeyController;
+use App\Http\Controllers\TInvoiceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -30,12 +31,19 @@ Route::group(['middleware'=>["auth:sanctum"]],function(){
     Route::get('/allDirectories',[DirectoryController::class, 'index']);
     Route::post('/addDirectory',[DirectoryController::class, 'store']);
     Route::post('/filter/directory',[DirectoryController::class,'filter']);
-    //Routes for 
+    //Routes for branches
     Route::get('/allBranches',[BranchController::class, 'index']);
     Route::post('/addBranch',[BranchController::class, 'store']);
-    //Routes for 
+    //Routes for InvoicesKeys
     Route::get('/allInvoicesKeys',[InvoiceKeyController::class, 'index']);
-    Route::post('/addInvoicesKeys',[InvoiceKeyController::class, 'store']);
+    Route::post('/addInvoiceKeys',[InvoiceKeyController::class, 'store']);
+    //Routes for invoice
+    Route::get('/allInvoices',[TInvoiceController::class, 'index']);
+    Route::get('/allInvoices/{id}',[TInvoiceController::class, 'getInvoicesForCurrentUser']);
+    Route::get('/showInvoice/{id}',[TInvoiceController::class, 'show']);
+    Route::post('/addInvoice',[TInvoiceController::class, 'store']);
+    Route::post('/filterInvoice',[TInvoiceController::class, 'filterInvoice']);
+    Route::post('/updateInvoice',[TInvoiceController::class, 'update']);
 });
 
 
