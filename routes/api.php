@@ -2,12 +2,14 @@
 
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\InvoiceKeyController;
+use App\Http\Controllers\SubdirectoryController;
 use App\Http\Controllers\TInvoiceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchController;;
 use App\Http\Controllers\PasswordChangeController;
+use App\Http\Controllers\ImageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,8 +44,19 @@ Route::group(['middleware'=>["auth:sanctum"]],function(){
     Route::get('/allInvoices/{id}',[TInvoiceController::class, 'getInvoicesForCurrentUser']);
     Route::get('/showInvoice/{id}',[TInvoiceController::class, 'show']);
     Route::post('/addInvoice',[TInvoiceController::class, 'store']);
-    Route::post('/filterInvoice',[TInvoiceController::class, 'filterInvoice']);
     Route::post('/updateInvoice',[TInvoiceController::class, 'update']);
+    //Routes for invoice 
+    Route::post('/images/store', [ImageController::class, 'store']);
+    Route::post('/images/update/{id}', [ImageController::class, 'update']);
+    Route::delete('/images/delete/{id}', [ImageController::class, 'destroy']);
+    //Routes for subdirectories
+    Route::post('/addSubdirectory', [SubdirectoryController::class, 'store']);
+    Route::get('/allSubdirectories', [SubdirectoryController::class, 'index']);
+    //Routes for search
+    Route::get('/invoices/filter',[TInvoiceController::class, 'search']);
+    
+
+
 });
 
 
