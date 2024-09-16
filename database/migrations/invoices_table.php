@@ -17,9 +17,9 @@ return new class extends Migration
             $table->string("InvoiceDesc")->nullable();
             $table->string("InvoiceBarCode")->nullable();
             $table->unsignedBigInteger('UserFId');
-            $table->unsignedBigInteger('DirectoryFId');
-            $table->unsignedBigInteger('BranchFId');
-            $table->string("InvoiceDate");
+            $table->unsignedBigInteger('DirectoryFId')->nullable();
+            $table->unsignedBigInteger('BranchFId')->nullable();
+            $table->string("InvoiceDate")->nullable();
             $table->unsignedBigInteger('InvoiceKeyFId')->nullable();
             $table->string("InvoicePath")->nullable();
             $table->string("AndroidVersion")->nullable();

@@ -5,6 +5,7 @@ use App\Http\Resources\InvoiceCollection;
 use App\Models\TInvoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Models\User;
 
 class TInvoiceController extends Controller
 {
@@ -20,7 +21,7 @@ class TInvoiceController extends Controller
     }
     public function store(Request $request){
         $validatedData=Validator::make($request->all(),[
-            'InvoiceCode' => 'required|string',
+            'InvoiceCode' => 'required|string|unique:TInvoices,InvoiceCode',
             'InvoiceDesc' => '',
             'InvoiceBarCode'=>'',
             'UserFId'=>'integer',
@@ -42,19 +43,17 @@ class TInvoiceController extends Controller
                 "errors"=>$validatedData->errors(),
             ]);
         }
+        $currentUser=auth()->user()->UserId;
 
-        if($request->InvoiceKeyFId != 0){
-            $key = $request->InvoiceKeyFId;
-        }
         $invoice = Tinvoice::create([
             'InvoiceCode' => $request->InvoiceCode,
             'InvoiceDesc' =>$request->InvoiceDesc,
             'InvoiceBarCode' =>$request->InvoiceBarCode,
-            'UserFId'=>$request->UserFId,
+            'UserFId'=>$currentUser,
             'DirectoryFId'=>$request->DirectoryFId,
             'BranchFId'=>$request->BranchFId,
             'InvoiceDate'=>$request->BranchFId,
-            'InvoiceKeyFId'=>$key,
+            'InvoiceKeyFId'=>$request->InvoiceKeyFId,
             'InvoicePath'=>$request->InvoicePath,
             'AndroidVersion'=>$request->AndroidVersion,
             'InvoiceUniqueId'=>$request->InvoiceUniqueId,
@@ -92,6 +91,67 @@ class TInvoiceController extends Controller
         } catch (\Throwable $th) {
             return response(['message' => $th->getMessage()], 500);
         }
+    }
+
+    public function search(Request $request) {
+        $query = TInvoice::query();
+    
+        if ($request->has('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('InvoiceCode', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('ClientName', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('ClientPhone', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('InvoiceBarCode', 'like', '%' . $searchTerm . '%') 
+                  ->orWhere('InvoiceDesc', 'like', '%' . $searchTerm . '%') 
+                  ->orWhere('InvoiceDate', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('ExpiredDate', 'like', '%' . $searchTerm . '%');
+            });
+        } else {
+            if ($request->has('InvoiceCode')) {
+                $query->where('InvoiceCode', 'like', '%' . $request->InvoiceCode . '%');
+            }
+    
+            if ($request->has('ClientName')) {
+                $query->where('ClientName', 'like', '%' . $request->ClientName . '%');
+            }
+    
+            if ($request->has('ClientPhone')) {
+                $query->where('ClientPhone', 'like', '%' . $request->ClientPhone . '%');
+            }
+            if ($request->has('InvoiceBarCode')) {
+                $query->where('InvoiceBarCode', 'like', '%' . $request->InvoiceBarCode . '%');
+            }
+            if ($request->has('InvoiceDesc')) {
+                $query->where('InvoiceDesc', 'like', '%' . $request->InvoiceDesc . '%');
+            }
+    
+            if ($request->has('InvoiceDate')) {
+                $query->whereDate('InvoiceDate', $request->InvoiceDate);
+            }
+    
+            if ($request->has('ExpiredDate')) {
+                $query->whereDate('ExpiredDate', $request->ExpiredDate);
+            }
+        }
+    
+       
+        $perPage = $request->get('per_page', 20); // Default to 10 items per page
+        $invoices = $query->paginate($perPage);
+    
+        if ($invoices->isEmpty()) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Aucun résultat trouvé',
+                'data' => $invoices
+            ]);
+        }
+    
+        return response()->json([
+            'status' => 200,
+            'message' => 'Recherche réussie',
+            'data' => $invoices
+        ]);
     }
 
     public function filterInvoice(Request $request){
