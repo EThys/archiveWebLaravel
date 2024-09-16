@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('TDirectories', function (Blueprint $table) {
-            $table->id("DirectoryId");
+            $table->bigIncrements("DirectoryId");
             $table->string("DirectoryName");
             $table->integer("ParentFId")->nullable();
             $table->boolean("Available")->nullable()->default(false);
