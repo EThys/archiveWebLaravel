@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('TInvoiceKeys', function (Blueprint $table) {
-            $table->id("InvoiceKeyId");
+            $table->bigIncrements("InvoiceKeyId");
             $table->string("Invoicekey");
             $table->unsignedBigInteger('DirectoryFId');
         });
@@ -23,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('invoice_keys');
+        Schema::dropIfExists('TInvoiceKeys');
     }
 };

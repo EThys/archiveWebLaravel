@@ -17,7 +17,7 @@ class InvoiceKeyController extends Controller
     public function store(Request $request){
         $validatedData=Validator::make($request->all(),[
             'Invoicekey' => 'required|string|unique:TInvoicekeys,Invoicekey',
-            'DirectoryFId'=>'required|int'
+            'DirectoryFId'=>'required|integer|exists:TDirectories,DirectoryId'
         ]);
 
         if($validatedData->fails()){

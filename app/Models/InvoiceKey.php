@@ -20,4 +20,7 @@ class InvoiceKey extends Model
     {
         return $this->hasMany(TInvoice::class);
     }
+    public function directory(){
+        return $this->belongsTo(Directory::class);
+    }
 }
