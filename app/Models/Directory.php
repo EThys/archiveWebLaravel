@@ -24,4 +24,13 @@ class Directory extends Model
     {
         return $this->hasMany(TInvoice::class);
     }
+
+    public function subDirectories(){
+        return $this->hasMany(Subdirectory::class,"DirectoryFId",);
+
+    }
+
+    public function InvoiceKeys(){
+        return $this->hasMany(InvoiceKey::class);
+    }
 }
