@@ -45,6 +45,7 @@ Route::group(['middleware'=>["auth:sanctum"]],function(){
     Route::get('/showInvoice/{id}',[TInvoiceController::class, 'show']);
     Route::post('/addInvoice',[TInvoiceController::class, 'store']);
     Route::post('/updateInvoice',[TInvoiceController::class, 'update']);
+    Route::delete('/deleteInvoice/{id}',[TInvoiceController::class, 'delete']);
     //Routes for invoice 
     Route::post('/images/store', [ImageController::class, 'store']);
     Route::post('/images/update/{id}', [ImageController::class, 'update']);

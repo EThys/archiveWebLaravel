@@ -189,9 +189,28 @@ class TInvoiceController extends Controller
         return response($response,201);
     }
 
+    public function delete($id)
+{
+    $invoice = TInvoice::find($id);
+
+    if (!$invoice) {
+        return response()->json([
+            'status' => 404,
+            'message' => "Facture non trouvée",
+        ]);
+    }
+
+    $invoice->delete();
+
+    return response()->json([
+        'status' => 200,
+        'message' => "Suppression réussie",
+    ]);
+}
+
     // public function destroy($id)
     // {
-    //     //
+        
     //     try {
     //         $invoice = Tinvoice::find($id);
     //         if($invoice){
