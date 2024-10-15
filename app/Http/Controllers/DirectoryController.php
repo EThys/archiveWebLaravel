@@ -42,6 +42,12 @@ class DirectoryController extends Controller
         return new DirectoryCollection($directories);
     }
 
+    public function getAllDirectory(){
+        $directories = Directory::all();
+      
+        return response()->json($directories);
+      }
+
     public function getAllDirectoryWithInvoicekey() {
         $invoiceKeys = Invoicekey::all();
         $directories = Directory::all(); 
