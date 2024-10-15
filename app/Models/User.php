@@ -23,10 +23,12 @@ class User extends Authenticatable
         "BranchFId",
         "IsAdmin",
         "SerialNumber",
+        "AccessToken"
     ];
 
-    public function branch(){
-        return $this->belongsTo(Branch::class);
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'BranchFId' , 'BranchId');
     }
 
     /**
