@@ -41,9 +41,13 @@ class TInvoice extends Model
     {
         return $this->belongsTo(Directory::class, 'DirectoryFId','DirectoryId');
     }
+    public function subdirectory()
+    {
+        return $this->belongsTo(Subdirectory::class, 'SubDirectoryFId','SubDirectoryId');
+    }
     public function invoicekey()
     {
-        return $this->belongsTo(InvoiceKey::class, 'InvoiceKeyFId','InvoicekeyId');
+        return $this->belongsTo(InvoiceKey::class, 'InvoiceKeyFId','InvoiceKeyId');
     }
     public function branch()
     {
