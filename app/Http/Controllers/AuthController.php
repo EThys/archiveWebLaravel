@@ -46,12 +46,17 @@ class AuthController extends Controller
           }
           
 
-        return response()->json([
-            'status' => 200,
-            'message' => 'Connexion réussie',
-            'token'=>$user->createToken("API TOKEN")->plainTextToken,
-            'user'=>$user
-        ],200);
+          $token = $user->createToken("API TOKEN")->plainTextToken;
+
+          $user->AccessToken = $token;
+          $user->save();
+      
+          return response()->json([
+              'status' => 200,
+              'message' => 'Connexion réussie',
+              'token' => $token,
+              'user' => $user
+          ], 200);
     }
 
     public function register(Request $request){
@@ -73,11 +78,11 @@ class AuthController extends Controller
         }
 
         $user=User::create([
-            'BranchFId'=>$request->BrancheFId,
             'UserName'=>$request->UserName,
             'Password'=>bcrypt($request->Password),
             'SerialNumber'=>$request->SerialNumber,
-            'IsAdmin'=>$request->IsAdmin
+            'IsAdmin'=>$request->IsAdmin,
+            'BranchFId'=>$request->BranchFId
 
         ]);
         return response()->json([
