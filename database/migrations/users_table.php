@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('TUsers', function (Blueprint $table) {
             $table->bigIncrements('UserId');
-            $table->unsignedBigInteger('BranchFId')->nullable();
+            $table->unsignedBigInteger('BranchFId');
             $table->string('UserName');
             $table->string('Password');
             $table->boolean('IsAdmin')->default(false);
+            $table->string('AccessToken')->nullable();
             $table->string('SerialNumber');
             $table->rememberToken();
         });
