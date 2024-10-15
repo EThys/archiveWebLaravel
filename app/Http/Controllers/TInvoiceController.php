@@ -94,7 +94,7 @@ class TInvoiceController extends Controller
     }
 
     public function search(Request $request) {
-        $query = TInvoice::query();
+        $query = TInvoice::query()->with('user.branch', 'invoicekey', 'directory', 'images');
     
         if ($request->has('search')) {
             $searchTerm = $request->search;
@@ -102,12 +102,27 @@ class TInvoiceController extends Controller
                 $q->where('InvoiceCode', 'like', '%' . $searchTerm . '%')
                   ->orWhere('ClientName', 'like', '%' . $searchTerm . '%')
                   ->orWhere('ClientPhone', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('InvoiceBarCode', 'like', '%' . $searchTerm . '%') 
-                  ->orWhere('InvoiceDesc', 'like', '%' . $searchTerm . '%') 
-                  ->orWhere('InvoiceDate', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('ExpiredDate', 'like', '%' . $searchTerm . '%');
+                  ->orWhere('InvoiceBarCode', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('InvoiceDesc', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('InvoiceKey', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('ExpiredDate', 'like', '%' . $searchTerm . '%')
+                  ->orWhereHas('directory', function($q) use ($searchTerm) {
+                      $q->where('DirectoryName', 'like', '%' . $searchTerm . '%');
+                  })
+                  ->orWhereHas('invoicekey', function($q) use ($searchTerm) {
+                      $q->where('Invoicekey', 'like', '%' . $searchTerm . '%');
+                  })
+                  ->orWhereHas('user.branch', function($q) use ($searchTerm) {
+                    $q->where('BranchName', 'like', '%' . $searchTerm . '%');
+                });
+                   
             });
         } else {
+            if ($request->has('BranchName')) {
+                $query->whereHas('user.branch', function($q) use ($request) {
+                    $q->where('BranchName', 'like', '%' . $request->BranchName . '%');
+                });
+            }
             if ($request->has('InvoiceCode')) {
                 $query->where('InvoiceCode', 'like', '%' . $request->InvoiceCode . '%');
             }
@@ -119,9 +134,11 @@ class TInvoiceController extends Controller
             if ($request->has('ClientPhone')) {
                 $query->where('ClientPhone', 'like', '%' . $request->ClientPhone . '%');
             }
+    
             if ($request->has('InvoiceBarCode')) {
                 $query->where('InvoiceBarCode', 'like', '%' . $request->InvoiceBarCode . '%');
             }
+    
             if ($request->has('InvoiceDesc')) {
                 $query->where('InvoiceDesc', 'like', '%' . $request->InvoiceDesc . '%');
             }
@@ -133,10 +150,24 @@ class TInvoiceController extends Controller
             if ($request->has('ExpiredDate')) {
                 $query->whereDate('ExpiredDate', $request->ExpiredDate);
             }
+    
+            if ($request->has('DirectoryName')) {
+                $query->whereHas('directory', function($q) use ($request) {
+                    $q->where('DirectoryName', 'like', '%' . $request->DirectoryName . '%');
+                });
+            }
+    
+            if ($request->has('Invoicekey')) {
+                $query->whereHas('invoicekey', function($q) use ($request) {
+                    $q->where('Invoicekey', 'like', '%' . $request->Invoicekey . '%');
+                });
+            }
+            if ($request->has(['date_from', 'date_to'])) {
+                $query->whereBetween('ExpiredDate', [$request->date_from, $request->date_to]);
+            }
         }
     
-       
-        $perPage = $request->get('per_page', 20); // Default to 10 items per page
+        $perPage = $request->get('per_page', 20); // Default to 20 items per page
         $invoices = $query->paginate($perPage);
     
         if ($invoices->isEmpty()) {
