@@ -24,18 +24,22 @@ use App\Http\Controllers\ImageController;
 
 Route::post('/register',[AuthController::class, 'register']);
 Route::post('/login',[AuthController::class, 'login']);
+Route::get('/allDirectories',[DirectoryController::class, 'index']);
+
+Route::post('/addBranch',[BranchController::class, 'store']);
 
 Route::group(['middleware'=>["auth:sanctum"]],function(){
     //Routes for Authentification
     Route::get('/logout',[AuthController::class, 'logout']);
     Route::post('/changePassword',[PasswordChangeController::class, 'changePassword']);
     //Routes for directory
-    Route::get('/allDirectories',[DirectoryController::class, 'index']);
+    
     Route::post('/addDirectory',[DirectoryController::class, 'store']);
     Route::post('/filter/directory',[DirectoryController::class,'filter']);
+    Route::get('/allDirectory',[DirectoryController::class, 'getAllDirectory']);
     //Routes for branches
     Route::get('/allBranches',[BranchController::class, 'index']);
-    Route::post('/addBranch',[BranchController::class, 'store']);
+    
     //Routes for InvoicesKeys
     Route::get('/allInvoicesKeys',[InvoiceKeyController::class, 'index']);
     Route::post('/addInvoiceKeys',[InvoiceKeyController::class, 'store']);
@@ -48,6 +52,7 @@ Route::group(['middleware'=>["auth:sanctum"]],function(){
     Route::delete('/deleteInvoice/{id}',[TInvoiceController::class, 'delete']);
     //Routes for invoice 
     Route::post('/images/store', [ImageController::class, 'store']);
+    Route::get('/images/all', [ImageController::class, 'index']);
     Route::post('/images/update/{id}', [ImageController::class, 'update']);
     Route::delete('/images/delete/{id}', [ImageController::class, 'destroy']);
     //Routes for subdirectories
