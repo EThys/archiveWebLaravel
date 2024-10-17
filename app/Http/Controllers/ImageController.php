@@ -20,12 +20,12 @@ class ImageController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'image' => 'required|mimes:jpeg,png,jpg,gif,pdf,doc,docx|max:4048',
+            'image' => 'required|mimes:jpeg,png,jpg,gif,pdf,doc,docx|max:25600',
             'InvoiceFId' => 'required|integer',
         ], [
             'image.required' => 'Une image est requise.',
             'image.mimes' => 'Le type de fichier doit être une image (jpeg, png, jpg, gif) ou un document (pdf, doc, docx).',
-            'image.max' => 'La taille du fichier ne doit pas dépasser 4 Mo.',
+            'image.max' => 'La taille du fichier ne doit pas dépasser 25 Mo.',
             'InvoiceFId.required' => 'L\'ID de la facture est requis.',
             'InvoiceFId.integer' => 'L\'ID de la facture doit être un entier.',
         ]);
