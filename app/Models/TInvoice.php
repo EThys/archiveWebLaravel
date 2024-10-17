@@ -18,6 +18,7 @@ class TInvoice extends Model
     public $table="TInvoices";
     protected $fillable = [
         'InvoiceId',
+        'RemoteId',
         'InvoiceCode',
         'InvoiceDesc',
         'InvoiceBarCode',
@@ -30,7 +31,8 @@ class TInvoice extends Model
         'AndroidVersion',
         'ClientName',
         'ClientPhone',
-        'ExpiredDate'
+        'ExpiredDate',
+        'CreatedAt'
     ];
 
     public function user()

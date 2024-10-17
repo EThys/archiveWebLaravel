@@ -6,6 +6,7 @@ use App\Models\TInvoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
+use Carbon\Carbon;
 
 class TInvoiceController extends Controller
 {
@@ -19,53 +20,64 @@ class TInvoiceController extends Controller
         $invoices =Tinvoice::where('UserFId', $id)->with('user.branch','invoicekey','directory',"images")->orderBy('InvoiceId', 'desc')->paginate(5);
         return new InvoiceCollection($invoices);
     }
-    public function store(Request $request){
-        $validatedData=Validator::make($request->all(),[
+    public function store(Request $request) {
+        $validatedData = Validator::make($request->all(), [
             'InvoiceCode' => 'required|string|unique:TInvoices,InvoiceCode',
             'InvoiceDesc' => '',
-            'InvoiceBarCode'=>'',
-            'UserFId'=>'integer',
-            'DirectoryFId'=>'integer',
-            'BranchFId'=>'integer',
-            'InvoiceDate'=>'string',
-            'InvoiceKeyFId'=>'',
-            'InvoicePath'=>'',
-            'AndroidVersion'=>'string',
-            'ClientName'=>'',
-            'ClientPhone'=>'',
-            'ExpiredDate'=>''    
+            'InvoiceBarCode' => '',
+            'UserFId' => 'integer',
+            'DirectoryFId' => 'integer',
+            'BranchFId' => 'integer',
+            'InvoiceDate' => 'string',
+            'InvoiceKeyFId' => '',
+            'InvoicePath' => '',
+            'AndroidVersion' => 'string',
+            'ClientName' => '',
+            'ClientPhone' => '',
+            'ExpiredDate' => ''
+        ], [
+            'InvoiceCode.unique' => 'Le code de facture doit être unique. Ce code existe déjà dans le système.',
         ]);
-
-        if($validatedData->fails()){
+    
+        if ($validatedData->fails()) {
             return response()->json([
-                'status'=>401,
-                'message'=> "Echec d'enregistrement",
-                "errors"=>$validatedData->errors(),
+                'status' => 401,
+                'message' => "Echec d'enregistrement",
+                "errors" => $validatedData->errors(),
             ]);
         }
-        $currentUser=auth()->user()->UserId;
-
+    
+        $currentUser = auth()->user()->UserId;
+    
+        // Création de la facture
         $invoice = Tinvoice::create([
             'InvoiceCode' => $request->InvoiceCode,
-            'InvoiceDesc' =>$request->InvoiceDesc,
-            'InvoiceBarCode' =>$request->InvoiceBarCode,
-            'UserFId'=>$currentUser,
-            'DirectoryFId'=>$request->DirectoryFId,
-            'BranchFId'=>$request->BranchFId,
-            'InvoiceDate'=>$request->BranchFId,
-            'InvoiceKeyFId'=>$request->InvoiceKeyFId,
-            'InvoicePath'=>$request->InvoicePath,
-            'AndroidVersion'=>$request->AndroidVersion,
-            'InvoiceUniqueId'=>$request->InvoiceUniqueId,
-            'ClientName'=>$request->ClientName,
-            'ClientPhone'=>$request->ClientPhone,
-            'ExpiredDate'=>$request->ExpiredDate
+            'InvoiceDesc' => $request->InvoiceDesc,
+            'InvoiceBarCode' => $request->InvoiceBarCode,
+            'UserFId' => $currentUser,
+            'DirectoryFId' => $request->DirectoryFId,
+            'BranchFId' => $request->BranchFId,
+            'InvoiceDate' => $request->InvoiceDate,  // Correction ici
+            'InvoiceKeyFId' => $request->InvoiceKeyFId,
+            'InvoicePath' => $request->InvoicePath,
+            'AndroidVersion' => $request->AndroidVersion,
+            'ClientName' => $request->ClientName,
+            'ClientPhone' => $request->ClientPhone,
+            'ExpiredDate' => $request->ExpiredDate,
+            'CreatedAt' => Carbon::now(),
         ]);
+        // dd($invoice->created_at);
+    
+        // Mise à jour de remoteId avec l'ID de la facture nouvellement créée
+        $invoice->RemoteId = $invoice->InvoiceId; // Assigner l'ID de la facture à RemoteId
+        $invoice->save(); // Enregistrer la mise à jour
+    
         return response()->json([
-            'status'=>201,
-            'message'=> "Enregistrement reussie",
-            "invoiceId"=>$invoice->InvoiceId
-        ]); 
+            'status' => 201,
+            'message' => "Enregistrement réussi",
+            "invoiceId" => $invoice->InvoiceId,
+            "invoices"=>$invoice
+        ]);
     }
 
     public function show($id){
@@ -76,20 +88,39 @@ class TInvoiceController extends Controller
         }
     }
 
-    public function update(Request $request, $id){
-        try {  
-            $data = [
-                'InvoiceDesc' => $request->InvoiceDesc,
-                'InvoiceBarCode' => $request->InvoiceBarCode
-            ];
+    public function update(Request $request, $id) {
+        try {
             $invoice = Tinvoice::find($id);
             if (!$invoice) {
-                return response(['message' => 'Invoice not found'], 404);
+                return response()->json(['message' => 'Invoice not found'], 404);
             }
+            $data = $request->only(['InvoiceDesc', 'InvoiceBarCode', 'InvoiceCode', 'InvoiceDate']);
+            
+            if ($request->has('InvoiceCode') && $request->InvoiceCode !== $invoice->InvoiceCode) {
+                $validator = Validator::make($request->all(), [
+                    'InvoiceCode' => 'required|string|unique:TInvoices,InvoiceCode',
+                ], [
+                    'InvoiceCode.unique' => 'Le code de facture doit être unique. Ce code existe déjà dans le système.',
+                ]);
+    
+                if ($validator->fails()) {
+                    return response()->json([
+                        'status' => 401,
+                        'message' => "Echec de la mise à jour",
+                        "errors" => $validator->errors(),
+                    ]);
+                }
+            }
+    
+            // Update the invoice
             $invoice->update($data);
-            return response(['message' => "Success"], 200);
+    
+            return response()->json([
+                'status' => 200,
+                'message' => "Success"
+            ], 200);
         } catch (\Throwable $th) {
-            return response(['message' => $th->getMessage()], 500);
+            return response()->json(['message' => 'An error occurred: ' . $th->getMessage()], 500);
         }
     }
 
@@ -105,7 +136,7 @@ class TInvoiceController extends Controller
                   ->orWhere('InvoiceBarCode', 'like', '%' . $searchTerm . '%')
                   ->orWhere('InvoiceDesc', 'like', '%' . $searchTerm . '%')
                   ->orWhere('InvoiceKey', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('ExpiredDate', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('InvoiceDate', 'like', '%' . $searchTerm . '%')
                   ->orWhereHas('directory', function($q) use ($searchTerm) {
                       $q->where('DirectoryName', 'like', '%' . $searchTerm . '%');
                   })
@@ -147,8 +178,8 @@ class TInvoiceController extends Controller
                 $query->whereDate('InvoiceDate', $request->InvoiceDate);
             }
     
-            if ($request->has('ExpiredDate')) {
-                $query->whereDate('ExpiredDate', $request->ExpiredDate);
+            if ($request->has('InvoiceDate')) {
+                $query->whereDate('InvoiceDate', $request->InvoiceDate);
             }
     
             if ($request->has('DirectoryName')) {
@@ -163,7 +194,14 @@ class TInvoiceController extends Controller
                 });
             }
             if ($request->has(['date_from', 'date_to'])) {
-                $query->whereBetween('ExpiredDate', [$request->date_from, $request->date_to]);
+                $query->whereBetween('InvoiceDate', [$request->date_from, $request->date_to]);
+            }
+            if ($request->has('sort_by') && in_array($request->sort_by, ['CreatedAt'])) {
+                $sortOrder = $request->get('sort_order', 'asc'); // Par défaut, tri ascendant
+                if (!in_array($sortOrder, ['asc', 'desc'])) {
+                    $sortOrder = 'asc'; // Assurez-vous que l'ordre est valide
+                }
+                $query->orderBy('CreatedAt', $sortOrder);
             }
         }
     

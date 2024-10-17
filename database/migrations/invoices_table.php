@@ -21,6 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('BranchFId')->nullable();
             $table->string("InvoiceDate")->nullable();
             $table->unsignedBigInteger('InvoiceKeyFId')->nullable();
+            $table->unsignedBigInteger('RemoteId')->nullable();
             $table->string("InvoicePath")->nullable();
             $table->string("AndroidVersion")->nullable();
             $table->string("ClientName")->nullable();
