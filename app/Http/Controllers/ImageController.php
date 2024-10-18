@@ -29,29 +29,33 @@ class ImageController extends Controller
             'InvoiceFId.required' => 'L\'ID de la facture est requis.',
             'InvoiceFId.integer' => 'L\'ID de la facture doit être un entier.',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
-    
+
         $imageFile = $request->file('image');
         $originalName = $imageFile->getClientOriginalName();
         $fileExtension = $imageFile->getClientOriginalExtension();
         $publicUrl = '';
         $path = '';
-    
-        // Vérifiez le type de fichier et attribuez l'URL par défaut si nécessaire
+
+        
+        $iconPath = null;
+
         if (in_array($fileExtension, ['doc', 'docx'])) {
-            $path = 'images/doc.png'; // Chemin par défaut pour les fichiers Word
-            $publicUrl = Storage::url($path); // URL par défaut pour les fichiers Word
+            $path = $imageFile->store('images', 'public');
+            $iconPath = Storage::url('images/doc.png');
+            $publicUrl = Storage::url($path);
         } elseif ($fileExtension === 'pdf') {
-            $path = 'images/pdf.png'; // Chemin par défaut pour les fichiers PDF
-            $publicUrl = Storage::url($path); // URL par défaut pour les fichiers PDF
+            $path = $imageFile->store('images', 'public');
+            $iconPath = Storage::url('images/pdf.png');
+            $publicUrl = Storage::url($path);
         } else {
-            $path = $imageFile->store('images', 'public'); // Stockez l'image normalement
+            $path = $imageFile->store('images', 'public');
             $publicUrl = Storage::url($path);
         }
-    
+
         $image = Image::create([
             'InvoiceFId' => $request->InvoiceFId,
             'ImageName' => pathinfo($originalName, PATHINFO_FILENAME),
@@ -59,11 +63,13 @@ class ImageController extends Controller
             'PublicUrl' => $publicUrl,
             'ImageOriginalName' => $originalName,
             'InsertedTime' => Carbon::now()->toDateTimeString(),
+            'IconPath' => $iconPath,
         ]);
-    
+
         return response()->json([
             'message' => "Images enregistrées avec succès",
             'public_url' => $publicUrl,
+            'icon_path' => $iconPath
         ], 200);
     }
 
@@ -78,11 +84,11 @@ class ImageController extends Controller
     }
 
     $image = Image::findOrFail($id);
-    
+
     if ($request->hasFile('image')) {
         // Supprimer l'ancienne image si nécessaire
         Storage::disk('public')->delete($image->ImagePath);
-        
+
         $imageFile = $request->file('image');
         $originalName = $imageFile->getClientOriginalName();
         $path = $imageFile->store('images', 'public');

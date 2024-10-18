@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string("ImageName");
             $table->string("ImagePath");
             $table->string("PublicUrl");
+            $table->string("IconPath")->nullable();
             $table->string("ImageOriginalName");
             $table->string("InsertedTime")->nullable();
         });

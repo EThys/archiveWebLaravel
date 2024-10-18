@@ -17,7 +17,8 @@ class Image extends Model
         'ImageName',
         'ImagePath',
         'PublicUrl',
-        'ImageOriginalName'
+        'ImageOriginalName',
+        'IconPath'
     ];
     const CREATED_AT = 'creation_date';
     const UPDATED_AT = 'last_update';
