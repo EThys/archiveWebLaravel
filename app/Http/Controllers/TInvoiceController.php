@@ -126,6 +126,13 @@ class TInvoiceController extends Controller
 
     public function search(Request $request) {
         $query = TInvoice::query()->with('user.branch', 'invoicekey', 'directory', 'images');
+        $user = auth()->user(); // Récupère l'utilisateur connecté
+       
+
+        if ($user->IsAdmin == 0) {
+            $query->where('UserFId', $user->UserId);
+        }
+
     
         if ($request->has('search')) {
             $searchTerm = $request->search;
